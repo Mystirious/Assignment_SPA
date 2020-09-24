@@ -1,24 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
+import React, {useRef, useState} from 'react';
+import { Button, Form} from 'react-bootstrap';
 import './App.css';
+import * as axios from "axios";
+import {adviceUrl} from "./_constants";
 
 function App() {
-  return (
+    const [advice, setAdvice] = useState();
+    const [copied, setCopied] = useState();
+    const textAreaRef = useRef(null);
+
+
+    const getAdvice = () => {
+        return axios
+            .get(adviceUrl)
+            .then((response) => {
+                console.log(response.data.slip.advice)
+                setAdvice(response.data.slip.advice);
+                if (response.status !== 200) {
+                    throw Error(response.statusText);
+                }
+                return response;
+            })
+            .catch((error) => {
+                console.log(error)
+                setAdvice(error.message);
+                throw error;
+            });
+    };
+
+    const copyToClipboard = (e) => {
+        console.log(textAreaRef)
+        textAreaRef.current.select();
+        document.execCommand('copy');
+        e.target.focus();
+        setCopied('copied!');
+    };
+
+    return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+<div className="assign">
+    <div className="text-show">
+        <textarea ref= {textAreaRef} value={advice}></textarea>
+        <div>
+            <p>{copied}</p>
+        </div>
+    </div>
+    <div className="reload">
+        <button onClick={getAdvice}>Reload</button>
+    </div>
+    <div className="copy-tweet">
+        <button  onClick={copyToClipboard}>Copy Text</button>
+        <button  onClick={copyToClipboard}>Tweet</button>
+    </div>
+</div>
     </div>
   );
 }
